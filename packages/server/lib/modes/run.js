@@ -164,6 +164,10 @@ const formatRecordParams = function (runUrl, parallel, group, tag) {
 const displayRunStarting = function (options = {}) {
   const { browser, config, group, parallel, runUrl, specPattern, specs, tag } = options
 
+  if (config.quiet === true) {
+    return
+  }
+
   console.log('')
 
   terminal.divider('=')
@@ -1061,7 +1065,7 @@ module.exports = {
   },
 
   waitForTestsToFinishRunning (options = {}) {
-    const { project, screenshots, startedVideoCapture, endVideoCapture, videoName, compressedVideoName, videoCompression, videoUploadOnPasses, exit, spec, estimated } = options
+    const { project, screenshots, startedVideoCapture, endVideoCapture, videoName, compressedVideoName, videoCompression, videoUploadOnPasses, exit, spec, estimated, config } = options
 
     // https://github.com/cypress-io/cypress/issues/2370
     // delay 1 second if we're recording a video to give
@@ -1095,10 +1099,11 @@ module.exports = {
         return obj
       }
 
-      this.displayResults(obj, estimated)
-
-      if (screenshots && screenshots.length) {
-        this.displayScreenshots(screenshots)
+      if (config.quiet !== true) {
+        this.displayResults(obj, estimated)
+        if (screenshots && screenshots.length) {
+          this.displayScreenshots(screenshots)
+        }
       }
 
       const { tests, stats } = obj
@@ -1203,7 +1208,9 @@ module.exports = {
     })
 
     const runEachSpec = (spec, index, length, estimated) => {
-      displaySpecHeader(spec.name, index + 1, length, estimated)
+      if (config.quiet !== true) {
+        displaySpecHeader(spec.name, index + 1, length, estimated)
+      }
 
       return this.runSpec(spec, options, estimated)
       .get('results')
